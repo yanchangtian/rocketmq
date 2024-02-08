@@ -58,7 +58,9 @@ public class NamesrvStartup {
 
     public static NamesrvController main0(String[] args) {
         try {
+            // 处理命令行和配置文件
             parseCommandlineAndConfigFile(args);
+            // 创建并且启动namesrvcontroller
             NamesrvController controller = createAndStartNamesrvController();
             return controller;
         } catch (Throwable e) {
@@ -139,7 +141,6 @@ public class NamesrvStartup {
     }
 
     public static NamesrvController createAndStartNamesrvController() throws Exception {
-
         NamesrvController controller = createNamesrvController();
         start(controller);
         NettyServerConfig serverConfig = controller.getNettyServerConfig();
@@ -150,7 +151,6 @@ public class NamesrvStartup {
     }
 
     public static NamesrvController createNamesrvController() {
-
         final NamesrvController controller = new NamesrvController(namesrvConfig, nettyServerConfig, nettyClientConfig);
         // remember all configs to prevent discard
         controller.getConfiguration().registerConfig(properties);
@@ -164,6 +164,7 @@ public class NamesrvStartup {
         }
 
         boolean initResult = controller.initialize();
+
         if (!initResult) {
             controller.shutdown();
             System.exit(-3);

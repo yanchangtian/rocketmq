@@ -495,7 +495,9 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 
     @Override
     public void updateNameServerAddressList(List<String> addrs) {
+
         List<String> old = this.namesrvAddrList.get();
+
         boolean update = false;
 
         if (!addrs.isEmpty()) {

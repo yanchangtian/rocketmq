@@ -33,6 +33,7 @@ import org.apache.rocketmq.logging.org.slf4j.Logger;
 import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
 
 public class NetworkUtil {
+
     public static final String OS_NAME = System.getProperty("os.name");
 
     private static final Logger log = LoggerFactory.getLogger(LoggerName.COMMON_LOGGER_NAME);

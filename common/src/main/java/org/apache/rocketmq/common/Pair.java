@@ -19,6 +19,7 @@ package org.apache.rocketmq.common;
 import java.io.Serializable;
 
 public class Pair<T1, T2> implements Serializable {
+
     private T1 object1;
     private T2 object2;
 
@@ -42,4 +43,5 @@ public class Pair<T1, T2> implements Serializable {
     public void setObject2(T2 object2) {
         this.object2 = object2;
     }
+
 }

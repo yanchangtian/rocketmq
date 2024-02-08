@@ -83,11 +83,16 @@ public class NamesrvController {
     private final Configuration configuration;
     private FileWatchService fileWatchService;
 
-    public NamesrvController(NamesrvConfig namesrvConfig, NettyServerConfig nettyServerConfig) {
+    public NamesrvController(NamesrvConfig namesrvConfig,
+                             NettyServerConfig nettyServerConfig) {
+
         this(namesrvConfig, nettyServerConfig, new NettyClientConfig());
     }
 
-    public NamesrvController(NamesrvConfig namesrvConfig, NettyServerConfig nettyServerConfig, NettyClientConfig nettyClientConfig) {
+    public NamesrvController(NamesrvConfig namesrvConfig,
+                             NettyServerConfig nettyServerConfig,
+                             NettyClientConfig nettyClientConfig) {
+
         this.namesrvConfig = namesrvConfig;
         this.nettyServerConfig = nettyServerConfig;
         this.nettyClientConfig = nettyClientConfig;
@@ -100,9 +105,12 @@ public class NamesrvController {
 
     public boolean initialize() {
         loadConfig();
+        // 创建 remotingServer 和 remotingClient
         initiateNetworkComponents();
         initiateThreadExecutors();
+        // 注册默认 processor 和 普通 processor
         registerProcessor();
+        // 启动一些定时任务
         startScheduleService();
         initiateSslContext();
         initiateRpcHooks();
@@ -114,12 +122,19 @@ public class NamesrvController {
     }
 
     private void startScheduleService() {
-        this.scanExecutorService.scheduleAtFixedRate(NamesrvController.this.routeInfoManager::scanNotActiveBroker,
-            5, this.namesrvConfig.getScanNotActiveBrokerInterval(), TimeUnit.MILLISECONDS);
+        // scanNotActiveBroker 定期扫描所有的 broker, 关闭超时 broker 的 channel
+        this.scanExecutorService.scheduleAtFixedRate(
+                NamesrvController.this.routeInfoManager::scanNotActiveBroker,
+                5,
+                this.namesrvConfig.getScanNotActiveBrokerInterval(), // 执行周期
+                TimeUnit.MILLISECONDS);
 
-        this.scheduledExecutorService.scheduleAtFixedRate(NamesrvController.this.kvConfigManager::printAllPeriodically,
-            1, 10, TimeUnit.MINUTES);
+        // printAllPeriodically 定期打印 configTable 中的内容
+        this.scheduledExecutorService.scheduleAtFixedRate(
+                NamesrvController.this.kvConfigManager::printAllPeriodically,
+                1, 10, TimeUnit.MINUTES);
 
+        // printWaterMark 定期打印一些线程池队列信息
         this.scheduledExecutorService.scheduleAtFixedRate(() -> {
             try {
                 NamesrvController.this.printWaterMark();
@@ -143,6 +158,7 @@ public class NamesrvController {
     }
 
     private void initiateSslContext() {
+
         if (TlsSystemConfig.tlsMode == TlsMode.DISABLED) {
             return;
         }
@@ -180,7 +196,16 @@ public class NamesrvController {
     }
 
     private void printWaterMark() {
-        WATER_MARK_LOG.info("[WATERMARK] ClientQueueSize:{} ClientQueueSlowTime:{} " + "DefaultQueueSize:{} DefaultQueueSlowTime:{}", this.clientRequestThreadPoolQueue.size(), headSlowTimeMills(this.clientRequestThreadPoolQueue), this.defaultThreadPoolQueue.size(), headSlowTimeMills(this.defaultThreadPoolQueue));
+        WATER_MARK_LOG.info(
+                "[WATERMARK] " +
+                        "ClientQueueSize:{} " +
+                        "ClientQueueSlowTime:{} " +
+                        "DefaultQueueSize:{} " +
+                        "DefaultQueueSlowTime:{}",
+                this.clientRequestThreadPoolQueue.size(),
+                headSlowTimeMills(this.clientRequestThreadPoolQueue),
+                this.defaultThreadPoolQueue.size(),
+                headSlowTimeMills(this.defaultThreadPoolQueue));
     }
 
     private long headSlowTimeMills(BlockingQueue<Runnable> q) {
@@ -203,13 +228,13 @@ public class NamesrvController {
 
     private void registerProcessor() {
         if (namesrvConfig.isClusterTest()) {
-
-            this.remotingServer.registerDefaultProcessor(new ClusterTestRequestProcessor(this, namesrvConfig.getProductEnvName()), this.defaultExecutor);
+            this.remotingServer.registerDefaultProcessor(
+                    new ClusterTestRequestProcessor(this, namesrvConfig.getProductEnvName()), this.defaultExecutor);
         } else {
+            // 支持仅临时获取 route info
             // Support get route info only temporarily
             ClientRequestProcessor clientRequestProcessor = new ClientRequestProcessor(this);
             this.remotingServer.registerProcessor(RequestCode.GET_ROUTEINFO_BY_TOPIC, clientRequestProcessor, this.clientRequestExecutor);
-
             this.remotingServer.registerDefaultProcessor(new DefaultRequestProcessor(this), this.defaultExecutor);
         }
     }
@@ -219,6 +244,7 @@ public class NamesrvController {
     }
 
     public void start() throws Exception {
+
         this.remotingServer.start();
 
         // In test scenarios where it is up to OS to pick up an available port, set the listening port back to config
@@ -226,8 +252,10 @@ public class NamesrvController {
             nettyServerConfig.setListenPort(this.remotingServer.localListenPort());
         }
 
-        this.remotingClient.updateNameServerAddressList(Collections.singletonList(NetworkUtil.getLocalAddress()
-            + ":" + nettyServerConfig.getListenPort()));
+        this.remotingClient.updateNameServerAddressList(
+                Collections.singletonList(
+                        NetworkUtil.getLocalAddress() + ":" + nettyServerConfig.getListenPort()));
+
         this.remotingClient.start();
 
         if (this.fileWatchService != null) {

@@ -199,8 +199,10 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 
     @Override
     public void start() {
-        this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(nettyServerConfig.getServerWorkerThreads(),
-            new ThreadFactoryImpl("NettyServerCodecThread_"));
+
+        this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(
+                nettyServerConfig.getServerWorkerThreads(),
+                new ThreadFactoryImpl("NettyServerCodecThread_"));
 
         prepareSharableHandlers();
 
@@ -270,16 +272,15 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
      */
     protected ChannelPipeline configChannel(SocketChannel ch) {
         return ch.pipeline()
-            .addLast(defaultEventExecutorGroup, HANDSHAKE_HANDLER_NAME, new HandshakeHandler())
-            .addLast(defaultEventExecutorGroup,
-                encoder,
-                new NettyDecoder(),
-                distributionHandler,
-                new IdleStateHandler(0, 0,
-                    nettyServerConfig.getServerChannelMaxIdleTimeSeconds()),
-                connectionManageHandler,
-                serverHandler
-            );
+                .addLast(defaultEventExecutorGroup, HANDSHAKE_HANDLER_NAME, new HandshakeHandler())
+                .addLast(defaultEventExecutorGroup,
+                        encoder,
+                        new NettyDecoder(),
+                        distributionHandler,
+                        new IdleStateHandler(0, 0, nettyServerConfig.getServerChannelMaxIdleTimeSeconds()),
+                        connectionManageHandler,
+                        serverHandler
+                );
     }
 
     private void addCustomConfig(ServerBootstrap childHandler) {
@@ -337,6 +338,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
     @Override
     public void registerProcessor(int requestCode, NettyRequestProcessor processor, ExecutorService executor) {
         ExecutorService executorThis = executor;
+
         if (null == executor) {
             executorThis = this.publicExecutor;
         }
@@ -547,11 +549,18 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
     @ChannelHandler.Sharable
     public class NettyServerHandler extends SimpleChannelInboundHandler<RemotingCommand> {
 
+        /**
+         * channel 可读时回调
+         *
+         * @param ctx 上下文
+         * @param msg 命令
+         */
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, RemotingCommand msg) {
             int localPort = RemotingHelper.parseSocketAddressPort(ctx.channel().localAddress());
             NettyRemotingAbstract remotingAbstract = NettyRemotingServer.this.remotingServerTable.get(localPort);
             if (localPort != -1 && remotingAbstract != null) {
+                // 处理已收到的消息
                 remotingAbstract.processMessageReceived(ctx, msg);
                 return;
             }
@@ -575,6 +584,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
             }
             super.channelWritabilityChanged(ctx);
         }
+
     }
 
     @ChannelHandler.Sharable
@@ -648,11 +658,15 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
     }
 
     /**
+     * NettyRemotingServer 支持绑定多个端口, 每个端口绑定一个 SubRemotingServer.
+     * SubRemotingServer 将所有功能委托给 NettyRemotingServer, 因此子服务器可以共享其父服务器的所有资源.
+     *
      * The NettyRemotingServer supports bind multiple ports, each port bound by a SubRemotingServer. The
      * SubRemotingServer will delegate all the functions to NettyRemotingServer, so the sub server can share all the
      * resources from its parent server.
      */
     class SubRemotingServer extends NettyRemotingAbstract implements RemotingServer {
+
         private volatile int listenPort;
         private volatile Channel serverChannel;
 

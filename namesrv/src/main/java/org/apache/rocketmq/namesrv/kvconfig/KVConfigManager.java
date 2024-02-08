@@ -34,8 +34,7 @@ public class KVConfigManager {
     private final NamesrvController namesrvController;
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
-    private final HashMap<String/* Namespace */, HashMap<String/* Key */, String/* Value */>> configTable =
-        new HashMap<>();
+    private final HashMap<String/* Namespace */, HashMap<String/* Key */, String/* Value */>> configTable = new HashMap<>();
 
     public KVConfigManager(NamesrvController namesrvController) {
         this.namesrvController = namesrvController;
@@ -174,7 +173,6 @@ public class KVConfigManager {
             this.lock.readLock().lockInterruptibly();
             try {
                 log.info("--------------------------------------------------------");
-
                 {
                     log.info("configTable SIZE: {}", this.configTable.size());
                     for (Entry<String, HashMap<String, String>> next : this.configTable.entrySet()) {

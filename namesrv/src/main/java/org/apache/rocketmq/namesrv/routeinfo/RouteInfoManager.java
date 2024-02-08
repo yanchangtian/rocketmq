@@ -66,6 +66,7 @@ import org.apache.rocketmq.remoting.protocol.route.TopicRouteData;
 import org.apache.rocketmq.remoting.protocol.statictopic.TopicQueueMappingInfo;
 
 public class RouteInfoManager {
+
     private static final Logger log = LoggerFactory.getLogger(LoggerName.NAMESRV_LOGGER_NAME);
     private final static long DEFAULT_BROKER_CHANNEL_EXPIRED_TIME = 1000 * 60 * 2;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
@@ -804,9 +805,12 @@ public class RouteInfoManager {
         try {
             log.info("start scanNotActiveBroker");
             for (Entry<BrokerAddrInfo, BrokerLiveInfo> next : this.brokerLiveTable.entrySet()) {
+                // 最后更新的时间戳
                 long last = next.getValue().getLastUpdateTimestamp();
+                // 心跳检测超时时间
                 long timeoutMillis = next.getValue().getHeartbeatTimeoutMillis();
                 if ((last + timeoutMillis) < System.currentTimeMillis()) {
+                    // 关闭超时 broker 的 channel, broker 与 namesrv 会建立长链接
                     RemotingHelper.closeChannel(next.getValue().getChannel());
                     log.warn("The broker channel expired, {} {}ms", next.getKey(), timeoutMillis);
                     this.onChannelDestroy(next.getKey());
@@ -1117,6 +1121,7 @@ public class RouteInfoManager {
  * broker address information
  */
 class BrokerAddrInfo {
+
     private String clusterName;
     private String brokerAddr;
 
@@ -1178,6 +1183,7 @@ class BrokerAddrInfo {
 }
 
 class BrokerLiveInfo {
+
     private long lastUpdateTimestamp;
     private long heartbeatTimeoutMillis;
     private DataVersion dataVersion;
@@ -1242,6 +1248,7 @@ class BrokerLiveInfo {
 }
 
 class BrokerStatusChangeInfo {
+
     Map<Long, String> brokerAddrs;
     String offlineBrokerAddr;
     String haBrokerAddr;
@@ -1275,4 +1282,5 @@ class BrokerStatusChangeInfo {
     public void setHaBrokerAddr(String haBrokerAddr) {
         this.haBrokerAddr = haBrokerAddr;
     }
+
 }

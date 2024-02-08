@@ -96,11 +96,12 @@ public abstract class NettyRemotingAbstract {
         new ConcurrentHashMap<>(256);
 
     /**
+     * 该容器保存每个请求代码的所有处理器, 对于每个传入请求, 我们可以在此映射中查找响应处理器来处理该请求.
+     *
      * This container holds all processors per request code, aka, for each incoming request, we may look up the
      * responding processor in this map to handle the request.
      */
-    protected final HashMap<Integer/* request code */, Pair<NettyRequestProcessor, ExecutorService>> processorTable =
-        new HashMap<>(64);
+    protected final HashMap<Integer/* request code */, Pair<NettyRequestProcessor, ExecutorService>> processorTable = new HashMap<>(64);
 
     /**
      * Executor to feed netty events to user defined {@link ChannelEventListener}.
@@ -108,8 +109,9 @@ public abstract class NettyRemotingAbstract {
     protected final NettyEventExecutor nettyEventExecutor = new NettyEventExecutor();
 
     /**
-     * The default request processor to use in case there is no exact match in {@link #processorTable} per request
-     * code.
+     * 如果在 processorTable 中无匹配, 则使用 defaultRequestProcessor 处理请求
+     *
+     * The default request processor to use in case there is no exact match in {@link #processorTable} per request code.
      */
     protected Pair<NettyRequestProcessor, ExecutorService> defaultRequestProcessorPair;
 
@@ -253,14 +255,14 @@ public abstract class NettyRemotingAbstract {
      * @param cmd request command.
      */
     public void processRequestCommand(final ChannelHandlerContext ctx, final RemotingCommand cmd) {
+
         final Pair<NettyRequestProcessor, ExecutorService> matched = this.processorTable.get(cmd.getCode());
         final Pair<NettyRequestProcessor, ExecutorService> pair = null == matched ? this.defaultRequestProcessorPair : matched;
         final int opaque = cmd.getOpaque();
 
         if (pair == null) {
             String error = " request type " + cmd.getCode() + " not supported";
-            final RemotingCommand response =
-                RemotingCommand.createResponseCommand(RemotingSysResponseCode.REQUEST_CODE_NOT_SUPPORTED, error);
+            final RemotingCommand response = RemotingCommand.createResponseCommand(RemotingSysResponseCode.REQUEST_CODE_NOT_SUPPORTED, error);
             response.setOpaque(opaque);
             writeResponse(ctx.channel(), cmd, response);
             log.error(RemotingHelper.parseChannelRemoteAddr(ctx.channel()) + error);
@@ -281,7 +283,7 @@ public abstract class NettyRemotingAbstract {
 
         if (pair.getObject1().rejectRequest()) {
             final RemotingCommand response = RemotingCommand.createResponseCommand(RemotingSysResponseCode.SYSTEM_BUSY,
-                "[REJECTREQUEST]system busy, start flow control for a while");
+                "[REJECT_REQUEST] system busy, start flow control for a while");
             response.setOpaque(opaque);
             writeResponse(ctx.channel(), cmd, response);
             return;
