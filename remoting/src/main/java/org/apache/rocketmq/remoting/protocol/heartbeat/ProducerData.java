@@ -21,6 +21,7 @@
 package org.apache.rocketmq.remoting.protocol.heartbeat;
 
 public class ProducerData {
+
     private String groupName;
 
     public String getGroupName() {
@@ -35,4 +36,5 @@ public class ProducerData {
     public String toString() {
         return "ProducerData [groupName=" + groupName + "]";
     }
+
 }

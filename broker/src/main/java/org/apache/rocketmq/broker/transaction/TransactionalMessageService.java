@@ -34,6 +34,9 @@ public interface TransactionalMessageService {
     PutMessageResult prepareMessage(MessageExtBrokerInner messageInner);
 
     /**
+     * <p>
+     *     以异步方式处理 Half 消息, 我们应该将此消息放入存储服务
+     * </p>
      * Process prepare message in async manner, we should put this message to storage service
      *
      * @param messageInner Prepare(Half) message.

@@ -60,7 +60,7 @@ public class NamesrvStartup {
         try {
             // 处理命令行和配置文件
             parseCommandlineAndConfigFile(args);
-            // 创建并且启动namesrvcontroller
+            // 创建并且启动 namesrv controller
             NamesrvController controller = createAndStartNamesrvController();
             return controller;
         } catch (Throwable e) {
@@ -141,7 +141,9 @@ public class NamesrvStartup {
     }
 
     public static NamesrvController createAndStartNamesrvController() throws Exception {
+        // 创建 namesrv controller
         NamesrvController controller = createNamesrvController();
+        // 启动 namesrv controller
         start(controller);
         NettyServerConfig serverConfig = controller.getNettyServerConfig();
         String tip = String.format("The Name Server boot success. serializeType=%s, address %s:%d", RemotingCommand.getSerializeTypeConfigInThisServer(), serverConfig.getBindAddress(), serverConfig.getListenPort());
@@ -152,6 +154,7 @@ public class NamesrvStartup {
 
     public static NamesrvController createNamesrvController() {
         final NamesrvController controller = new NamesrvController(namesrvConfig, nettyServerConfig, nettyClientConfig);
+        // 记住所有配置以防止丢弃
         // remember all configs to prevent discard
         controller.getConfiguration().registerConfig(properties);
         return controller;
@@ -162,7 +165,7 @@ public class NamesrvStartup {
         if (null == controller) {
             throw new IllegalArgumentException("NamesrvController is null");
         }
-
+        // 初始化 namesrv controller
         boolean initResult = controller.initialize();
 
         if (!initResult) {
@@ -174,7 +177,7 @@ public class NamesrvStartup {
             controller.shutdown();
             return null;
         }));
-
+        // 启动 namesrv controller
         controller.start();
 
         return controller;

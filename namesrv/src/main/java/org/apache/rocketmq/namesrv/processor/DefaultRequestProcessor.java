@@ -92,7 +92,7 @@ public class DefaultRequestProcessor implements NettyRequestProcessor {
 
     @Override
     public RemotingCommand processRequest(ChannelHandlerContext ctx,
-        RemotingCommand request) throws RemotingCommandException {
+                                          RemotingCommand request) throws RemotingCommandException {
 
         if (ctx != null) {
             log.debug("receive request, {} {} {}",
@@ -110,11 +110,11 @@ public class DefaultRequestProcessor implements NettyRequestProcessor {
                 return this.deleteKVConfig(ctx, request);
             case RequestCode.QUERY_DATA_VERSION:
                 return this.queryBrokerTopicConfig(ctx, request);
-            case RequestCode.REGISTER_BROKER:
+            case RequestCode.REGISTER_BROKER: // 注册 broker
                 return this.registerBroker(ctx, request);
-            case RequestCode.UNREGISTER_BROKER:
+            case RequestCode.UNREGISTER_BROKER: // 注销 broker
                 return this.unregisterBroker(ctx, request);
-            case RequestCode.BROKER_HEARTBEAT:
+            case RequestCode.BROKER_HEARTBEAT: // broker 心跳检测
                 return this.brokerHeartbeat(ctx, request);
             case RequestCode.GET_BROKER_MEMBER_GROUP:
                 return this.getBrokerMemberGroup(ctx, request);
@@ -126,9 +126,9 @@ public class DefaultRequestProcessor implements NettyRequestProcessor {
                 return this.addWritePermOfBroker(ctx, request);
             case RequestCode.GET_ALL_TOPIC_LIST_FROM_NAMESERVER:
                 return this.getAllTopicListFromNameserver(ctx, request);
-            case RequestCode.DELETE_TOPIC_IN_NAMESRV:
+            case RequestCode.DELETE_TOPIC_IN_NAMESRV: // 删除 topic
                 return this.deleteTopicInNamesrv(ctx, request);
-            case RequestCode.REGISTER_TOPIC_IN_NAMESRV:
+            case RequestCode.REGISTER_TOPIC_IN_NAMESRV: // 注册 topic
                 return this.registerTopicToNamesrv(ctx, request);
             case RequestCode.GET_KVLIST_BY_NAMESPACE:
                 return this.getKVListByNamespace(ctx, request);

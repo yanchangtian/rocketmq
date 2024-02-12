@@ -35,9 +35,9 @@ public interface RemotingClient extends RemotingService {
 
     List<String> getAvailableNameSrvList();
 
-    RemotingCommand invokeSync(final String addr, final RemotingCommand request,
-        final long timeoutMillis) throws InterruptedException, RemotingConnectException,
-        RemotingSendRequestException, RemotingTimeoutException;
+    RemotingCommand invokeSync(final String addr,
+                               final RemotingCommand request,
+                               final long timeoutMillis) throws InterruptedException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException;
 
     void invokeAsync(final String addr, final RemotingCommand request, final long timeoutMillis,
         final InvokeCallback invokeCallback) throws InterruptedException, RemotingConnectException,

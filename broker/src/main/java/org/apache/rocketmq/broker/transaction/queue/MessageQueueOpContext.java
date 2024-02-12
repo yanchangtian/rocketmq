@@ -20,6 +20,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MessageQueueOpContext {
+
     private AtomicInteger totalSize = new AtomicInteger(0);
     private volatile long lastWriteTimestamp;
     private LinkedBlockingQueue<String> contextQueue;

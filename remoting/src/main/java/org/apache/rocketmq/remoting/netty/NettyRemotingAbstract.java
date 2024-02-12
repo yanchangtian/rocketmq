@@ -121,6 +121,8 @@ public abstract class NettyRemotingAbstract {
     protected volatile SslContext sslContext;
 
     /**
+     * rpc 调用的钩子方法
+     * <p>
      * custom rpc hooks
      */
     protected List<RPCHook> rpcHooks = new ArrayList<>();
@@ -313,9 +315,13 @@ public abstract class NettyRemotingAbstract {
         }
     }
 
-    private Runnable buildProcessRequestHandler(ChannelHandlerContext ctx, RemotingCommand cmd,
-        Pair<NettyRequestProcessor, ExecutorService> pair, int opaque) {
+    private Runnable buildProcessRequestHandler(ChannelHandlerContext ctx,
+                                                RemotingCommand cmd,
+                                                Pair<NettyRequestProcessor, ExecutorService> pair,
+                                                int opaque) {
+
         return () -> {
+
             Exception exception = null;
             RemotingCommand response;
 

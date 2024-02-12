@@ -29,6 +29,7 @@ import org.apache.rocketmq.common.sysflag.MessageSysFlag;
 import org.apache.rocketmq.common.topic.TopicValidator;
 
 public class TransactionalMessageUtil {
+
     public static final String REMOVE_TAG = "d";
     public static final Charset CHARSET = StandardCharsets.UTF_8;
     public static final String OFFSET_SEPARATOR = ",";

@@ -212,13 +212,14 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
             .option(ChannelOption.SO_REUSEADDR, true)
             .childOption(ChannelOption.SO_KEEPALIVE, false)
             .childOption(ChannelOption.TCP_NODELAY, true)
-            .localAddress(new InetSocketAddress(this.nettyServerConfig.getBindAddress(),
-                this.nettyServerConfig.getListenPort()))
+            .localAddress(new InetSocketAddress(this.nettyServerConfig.getBindAddress(), this.nettyServerConfig.getListenPort()))
             .childHandler(new ChannelInitializer<SocketChannel>() {
+
                 @Override
                 public void initChannel(SocketChannel ch) {
                     configChannel(ch);
                 }
+
             });
 
         addCustomConfig(serverBootstrap);
@@ -226,12 +227,17 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
         try {
             ChannelFuture sync = serverBootstrap.bind().sync();
             InetSocketAddress addr = (InetSocketAddress) sync.channel().localAddress();
+
             if (0 == nettyServerConfig.getListenPort()) {
                 this.nettyServerConfig.setListenPort(addr.getPort());
             }
-            log.info("RemotingServer started, listening {}:{}", this.nettyServerConfig.getBindAddress(),
-                this.nettyServerConfig.getListenPort());
+
+            log.info("RemotingServer started, listening {}:{}",
+                    this.nettyServerConfig.getBindAddress(),
+                    this.nettyServerConfig.getListenPort());
+
             this.remotingServerTable.put(this.nettyServerConfig.getListenPort(), this);
+
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Failed to bind to %s:%d", nettyServerConfig.getBindAddress(),
                 nettyServerConfig.getListenPort()), e);
@@ -253,6 +259,8 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
                 }
             }
         };
+
+        // 启动定时任务
         this.timer.newTimeout(timerScanResponseTable, 1000 * 3, TimeUnit.MILLISECONDS);
 
         scheduledExecutorService.scheduleWithFixedDelay(() -> {
@@ -279,6 +287,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
                         distributionHandler,
                         new IdleStateHandler(0, 0, nettyServerConfig.getServerChannelMaxIdleTimeSeconds()),
                         connectionManageHandler,
+                        // 服务 handler
                         serverHandler
                 );
     }

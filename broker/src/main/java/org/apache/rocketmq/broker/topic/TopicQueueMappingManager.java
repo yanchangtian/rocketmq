@@ -186,7 +186,7 @@ public class TopicQueueMappingManager extends ConfigManager {
         return buildTopicQueueMappingContext(requestHeader, false);
     }
 
-    //Do not return a null context
+    // Do not return a null context
     public TopicQueueMappingContext buildTopicQueueMappingContext(TopicRequestHeader requestHeader, boolean selectOneWhenMiss) {
         // if lo is set to false explicitly, it maybe the forwarded request
         if (requestHeader.getLo() != null
@@ -201,7 +201,7 @@ public class TopicQueueMappingManager extends ConfigManager {
 
         TopicQueueMappingDetail mappingDetail = getTopicQueueMapping(topic);
         if (mappingDetail == null) {
-            //it is not static topic
+            // it is not static topic
             return new TopicQueueMappingContext(topic, null, null, null, null);
         }
         assert mappingDetail.getBname().equals(this.brokerController.getBrokerConfig().getBrokerName());
@@ -210,7 +210,7 @@ public class TopicQueueMappingManager extends ConfigManager {
             return new TopicQueueMappingContext(topic, null, mappingDetail, null, null);
         }
 
-        //If not find mappingItem, it encounters some errors
+        // If not find mappingItem, it encounters some errors
         if (globalId < 0 && !selectOneWhenMiss) {
             return new TopicQueueMappingContext(topic, globalId, mappingDetail, null, null);
         }
@@ -218,7 +218,7 @@ public class TopicQueueMappingManager extends ConfigManager {
         if (globalId < 0) {
             try {
                 if (!mappingDetail.getHostedQueues().isEmpty()) {
-                    //do not check
+                    // do not check
                     globalId = mappingDetail.getHostedQueues().keySet().iterator().next();
                 }
             } catch (Throwable ignored) {
@@ -238,7 +238,7 @@ public class TopicQueueMappingManager extends ConfigManager {
     }
 
 
-    public  RemotingCommand rewriteRequestForStaticTopic(TopicQueueRequestHeader requestHeader, TopicQueueMappingContext mappingContext) {
+    public RemotingCommand rewriteRequestForStaticTopic(TopicQueueRequestHeader requestHeader, TopicQueueMappingContext mappingContext) {
         try {
             if (mappingContext.getMappingDetail() == null) {
                 return null;

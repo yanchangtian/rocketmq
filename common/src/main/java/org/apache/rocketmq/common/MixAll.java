@@ -208,6 +208,15 @@ public class MixAll {
         IOTinyUtils.writeStringToFile(file, str, "UTF-8");
     }
 
+    /**
+     * <p>
+     *     读取文件, 以字符串的形式返回内容
+     * </p>
+     *
+     * @param fileName
+     * @return
+     * @throws IOException
+     */
     public static String file2String(final String fileName) throws IOException {
         File file = new File(fileName);
         return file2String(file);

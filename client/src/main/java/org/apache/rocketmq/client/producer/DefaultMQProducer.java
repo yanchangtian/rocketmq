@@ -353,9 +353,11 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
     public void start() throws MQClientException {
         this.setProducerGroup(withNamespace(this.producerGroup));
         this.defaultMQProducerImpl.start();
-        if (this.produceAccumulator != null) {
+
+        if (null != this.produceAccumulator) {
             this.produceAccumulator.start();
         }
+
         if (null != traceDispatcher) {
             try {
                 traceDispatcher.start(this.getNamesrvAddr(), this.getAccessChannel());
@@ -412,7 +414,9 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
     }
 
     /**
-     * 以同步方式发送消息. 此方法仅在发送过程完全完成时返回</p>
+     * <p>
+     *     以同步方式发送消息. 此方法仅在发送过程完全完成时返回
+     * </p>
      *
      * Send message in synchronous mode. This method returns only when the sending procedure totally completes. </p>
      *
@@ -458,7 +462,8 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
      */
     @Override
     public SendResult send(Message msg,
-        long timeout) throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
+                           long timeout) throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
+
         msg.setTopic(withNamespace(msg.getTopic()));
         return this.defaultMQProducerImpl.send(msg, timeout);
     }
@@ -580,8 +585,10 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
      * @throws InterruptedException if the sending thread is interrupted.
      */
     @Override
-    public void send(Message msg, MessageQueue mq, SendCallback sendCallback)
-        throws MQClientException, RemotingException, InterruptedException {
+    public void send(Message msg,
+                     MessageQueue mq,
+                     SendCallback sendCallback) throws MQClientException, RemotingException, InterruptedException {
+
         msg.setTopic(withNamespace(msg.getTopic()));
         mq = queueWithNamespace(mq);
         try {
@@ -643,8 +650,10 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
      * @throws InterruptedException if the sending thread is interrupted.
      */
     @Override
-    public SendResult send(Message msg, MessageQueueSelector selector, Object arg)
-        throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
+    public SendResult send(Message msg,
+                           MessageQueueSelector selector,
+                           Object arg) throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
+
         msg.setTopic(withNamespace(msg.getTopic()));
         MessageQueue mq = this.defaultMQProducerImpl.invokeMessageQueueSelector(msg, selector, arg, this.getSendMsgTimeout());
         mq = queueWithNamespace(mq);
@@ -914,8 +923,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
      * @throws MQClientException
      */
     @Override
-    public TransactionSendResult sendMessageInTransaction(Message msg,
-        Object arg) throws MQClientException {
+    public TransactionSendResult sendMessageInTransaction(Message msg, Object arg) throws MQClientException {
         throw new RuntimeException("sendMessageInTransaction not implement, please use TransactionMQProducer class");
     }
 

@@ -28,7 +28,7 @@ import org.apache.rocketmq.remoting.protocol.RemotingCommand;
 public interface RemotingServer extends RemotingService {
 
     /**
-     * 注册 namesrv 的 processor
+     * 注册 processor
      *
      * @param requestCode processor 可以处理的 requestCode
      * @param processor processor
@@ -37,7 +37,9 @@ public interface RemotingServer extends RemotingService {
     void registerProcessor(final int requestCode, final NettyRequestProcessor processor, final ExecutorService executor);
 
     /**
-     * todo 默认的与普通的 processor 有什么区别 ?
+     * <p>
+     *     默认的 processor 与普通的 processor 有什么区别 ?
+     * </p>
      *
      * 默认的没有指定 requestCode, 在 requestCode 无法映射到普通 processor 时, 使用 defaultProcessor 处理该请求
      *

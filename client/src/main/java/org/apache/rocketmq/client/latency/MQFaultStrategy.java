@@ -36,7 +36,8 @@ public class MQFaultStrategy {
             this.lastBrokerName = lastBrokerName;
         }
 
-        @Override public boolean filter(MessageQueue mq) {
+        @Override
+        public boolean filter(MessageQueue mq) {
             if (lastBrokerName != null) {
                 return !mq.getBrokerName().equals(lastBrokerName);
             }
@@ -44,11 +45,7 @@ public class MQFaultStrategy {
         }
     }
 
-    private ThreadLocal<BrokerFilter> threadBrokerFilter = new ThreadLocal<BrokerFilter>() {
-        @Override protected BrokerFilter initialValue() {
-            return new BrokerFilter();
-        }
-    };
+    private ThreadLocal<BrokerFilter> threadBrokerFilter = ThreadLocal.withInitial(() -> new BrokerFilter());
 
     private QueueFilter reachableFilter = new QueueFilter() {
         @Override public boolean filter(MessageQueue mq) {
@@ -137,7 +134,7 @@ public class MQFaultStrategy {
     public MessageQueue selectOneMessageQueue(final TopicPublishInfo tpInfo, final String lastBrokerName, final boolean resetIndex) {
         BrokerFilter brokerFilter = threadBrokerFilter.get();
         brokerFilter.setLastBrokerName(lastBrokerName);
-        if (this.sendLatencyFaultEnable) {
+        if (this.sendLatencyFaultEnable) { // 默认 false
             if (resetIndex) {
                 tpInfo.resetIndex();
             }

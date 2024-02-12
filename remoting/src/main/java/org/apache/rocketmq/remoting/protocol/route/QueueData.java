@@ -21,15 +21,14 @@
 package org.apache.rocketmq.remoting.protocol.route;
 
 public class QueueData implements Comparable<QueueData> {
+
     private String brokerName;
     private int readQueueNums;
     private int writeQueueNums;
     private int perm;
     private int topicSysFlag;
 
-    public QueueData() {
-
-    }
+    public QueueData() {}
 
     // Deep copy QueueData
     public QueueData(QueueData queueData) {
@@ -126,4 +125,5 @@ public class QueueData implements Comparable<QueueData> {
     public void setBrokerName(String brokerName) {
         this.brokerName = brokerName;
     }
+
 }

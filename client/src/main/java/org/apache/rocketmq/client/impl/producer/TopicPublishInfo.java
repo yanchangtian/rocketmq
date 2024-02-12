@@ -26,6 +26,7 @@ import org.apache.rocketmq.remoting.protocol.route.QueueData;
 import org.apache.rocketmq.remoting.protocol.route.TopicRouteData;
 
 public class TopicPublishInfo {
+
     private boolean orderTopic = false;
     private boolean haveTopicRouterInfo = false;
     private List<MessageQueue> messageQueueList = new ArrayList<>();
@@ -76,7 +77,10 @@ public class TopicPublishInfo {
         return selectOneMessageQueue(this.messageQueueList, this.sendWhichQueue, filter);
     }
 
-    private MessageQueue selectOneMessageQueue(List<MessageQueue> messageQueueList, ThreadLocalIndex sendQueue, QueueFilter ...filter) {
+    private MessageQueue selectOneMessageQueue(List<MessageQueue> messageQueueList,
+                                               ThreadLocalIndex sendQueue,
+                                               QueueFilter ...filter) {
+
         if (messageQueueList == null || messageQueueList.isEmpty()) {
             return null;
         }
@@ -153,4 +157,5 @@ public class TopicPublishInfo {
     public void setTopicRouteData(final TopicRouteData topicRouteData) {
         this.topicRouteData = topicRouteData;
     }
+
 }

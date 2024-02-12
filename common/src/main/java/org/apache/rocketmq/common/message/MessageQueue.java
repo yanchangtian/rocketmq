@@ -19,14 +19,13 @@ package org.apache.rocketmq.common.message;
 import java.io.Serializable;
 
 public class MessageQueue implements Comparable<MessageQueue>, Serializable {
+
     private static final long serialVersionUID = 6191200464116433425L;
     private String topic;
     private String brokerName;
     private int queueId;
 
-    public MessageQueue() {
-
-    }
+    public MessageQueue() {}
 
     public MessageQueue(MessageQueue other) {
         this.topic = other.topic;
@@ -121,4 +120,5 @@ public class MessageQueue implements Comparable<MessageQueue>, Serializable {
 
         return this.queueId - o.queueId;
     }
+
 }

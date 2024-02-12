@@ -96,6 +96,8 @@ public class MQClientInstance {
     private final long bootTimestamp = System.currentTimeMillis();
 
     /**
+     * 当前客户端中生产者的容器. key 是 ProducerGroup 的名称.
+     *
      * The container of the producer in the current client. The key is the name of producerGroup.
      */
     private final ConcurrentMap<String, MQProducerInner> producerTable = new ConcurrentHashMap<>();
@@ -118,6 +120,11 @@ public class MQClientInstance {
     private final Lock lockHeartbeat = new ReentrantLock();
 
     /**
+     * <p>
+     *     存储 brokerClusterInfo 的容器. key 是 brokerCluster 名称, value 为属于 broker 集群的 broker 实例列表
+     *     对于子映射, key 是单个 broker 实例的id, value 是 broker 地址
+     * </p>
+     *
      * The container which stores the brokerClusterInfo. The key of the map is the brokerCluster name.
      * And the value is the broker instance list that belongs to the broker cluster.
      * For the sub map, the key is the id of single broker instance, and the value is the address.
@@ -220,9 +227,16 @@ public class MQClientInstance {
             MQVersion.getVersionDesc(MQVersion.CURRENT_VERSION), RemotingCommand.getSerializeTypeConfigInThisServer());
     }
 
+    /**
+     * 将从 namesvr 获取的 TopicRouteData 转化为 producer 本地的 TopicPublishInfo.
+     *
+     * @param topic
+     * @param route
+     * @return
+     */
     public static TopicPublishInfo topicRouteData2TopicPublishInfo(final String topic, final TopicRouteData route) {
         TopicPublishInfo info = new TopicPublishInfo();
-        // TO DO should check the usage of raw route, it is better to remove such field
+        // TODO should check the usage of raw route, it is better to remove such field
         info.setTopicRouteData(route);
         if (route.getOrderTopicConf() != null && route.getOrderTopicConf().length() > 0) {
             String[] brokers = route.getOrderTopicConf().split(";");
@@ -303,10 +317,11 @@ public class MQClientInstance {
             switch (this.serviceState) {
                 case CREATE_JUST:
                     this.serviceState = ServiceState.START_FAILED;
-                    // If not specified,looking address from name server
+                    // If not specified, looking address from name server
                     if (null == this.clientConfig.getNamesrvAddr()) {
                         this.mQClientAPIImpl.fetchNameServerAddr();
                     }
+                    // 开启了两个定时任务
                     // Start request-response channel
                     this.mQClientAPIImpl.start();
                     // Start various schedule tasks
@@ -330,6 +345,7 @@ public class MQClientInstance {
 
     private void startScheduledTask() {
         if (null == this.clientConfig.getNamesrvAddr()) {
+            // 定时拉取 namesrv addr
             this.scheduledExecutorService.scheduleAtFixedRate(() -> {
                 try {
                     MQClientInstance.this.mQClientAPIImpl.fetchNameServerAddr();
@@ -340,6 +356,7 @@ public class MQClientInstance {
         }
 
         this.scheduledExecutorService.scheduleAtFixedRate(() -> {
+            // 定时从 namesrv 更新 topic route info
             try {
                 MQClientInstance.this.updateTopicRouteInfoFromNameServer();
             } catch (Exception e) {
@@ -350,6 +367,7 @@ public class MQClientInstance {
         this.scheduledExecutorService.scheduleAtFixedRate(() -> {
             try {
                 MQClientInstance.this.cleanOfflineBroker();
+                // 发送心跳检测到所有的 broker
                 MQClientInstance.this.sendHeartbeatToAllBrokerWithLock();
             } catch (Exception e) {
                 log.error("ScheduledTask sendHeartbeatToAllBroker exception", e);
@@ -621,7 +639,9 @@ public class MQClientInstance {
 
     private boolean sendHeartbeatToBroker(long id, String brokerName, String addr, HeartbeatData heartbeatData) {
         try {
+            // 发送心跳包
             int version = this.mQClientAPIImpl.sendHeartbeat(addr, heartbeatData, clientConfig.getMqClientApiTimeout());
+            // 将发送心跳包返回的 version 信息保存到 brokerVersionTable
             if (!this.brokerVersionTable.containsKey(brokerName)) {
                 this.brokerVersionTable.put(brokerName, new HashMap<>(4));
             }
@@ -647,6 +667,7 @@ public class MQClientInstance {
         final HeartbeatData heartbeatData = this.prepareHeartbeatData(false);
         final boolean producerEmpty = heartbeatData.getProducerDataSet().isEmpty();
         final boolean consumerEmpty = heartbeatData.getConsumerDataSet().isEmpty();
+
         if (producerEmpty && consumerEmpty) {
             log.warn("sending heartbeat, but no consumer and no producer. [{}]", this.clientId);
             return false;
@@ -655,22 +676,26 @@ public class MQClientInstance {
         if (this.brokerAddrTable.isEmpty()) {
             return false;
         }
+
         for (Entry<String, HashMap<Long, String>> brokerClusterInfo : this.brokerAddrTable.entrySet()) {
             String brokerName = brokerClusterInfo.getKey();
             HashMap<Long, String> oneTable = brokerClusterInfo.getValue();
+
             if (oneTable == null) {
                 continue;
             }
+
             for (Entry<Long, String> singleBrokerInstance : oneTable.entrySet()) {
                 Long id = singleBrokerInstance.getKey();
                 String addr = singleBrokerInstance.getValue();
                 if (addr == null) {
                     continue;
                 }
+                // broker cluster 中 master 的 broker id 为 0
                 if (consumerEmpty && MixAll.MASTER_ID != id) {
                     continue;
                 }
-
+                // 向 broker 发送心跳包
                 sendHeartbeatToBroker(id, brokerName, addr, heartbeatData);
             }
         }
@@ -1128,6 +1153,7 @@ public class MQClientInstance {
         }
         HashMap<Long/* brokerId */, String/* address */> map = this.brokerAddrTable.get(brokerName);
         if (map != null && !map.isEmpty()) {
+            // 发消息只能发送到 master 上
             return map.get(MixAll.MASTER_ID);
         }
 

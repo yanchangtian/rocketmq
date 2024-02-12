@@ -26,6 +26,7 @@ import com.alibaba.fastjson.JSON;
 import org.apache.rocketmq.remoting.protocol.RemotingSerializable;
 
 public class HeartbeatData extends RemotingSerializable {
+
     private String clientID;
     private Set<ProducerData> producerDataSet = new HashSet<>();
     private Set<ConsumerData> consumerDataSet = new HashSet<>();

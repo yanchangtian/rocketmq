@@ -52,13 +52,16 @@ public class ClientRequestProcessor implements NettyRequestProcessor {
 
     @Override
     public RemotingCommand processRequest(final ChannelHandlerContext ctx,
-        final RemotingCommand request) throws Exception {
+                                          final RemotingCommand request) throws Exception {
+
         return this.getRouteInfoByTopic(ctx, request);
     }
 
     public RemotingCommand getRouteInfoByTopic(ChannelHandlerContext ctx,
-        RemotingCommand request) throws RemotingCommandException {
+                                               RemotingCommand request) throws RemotingCommandException {
+
         final RemotingCommand response = RemotingCommand.createResponseCommand(null);
+
         final GetRouteInfoRequestHeader requestHeader =
             (GetRouteInfoRequestHeader) request.decodeCommandCustomHeader(GetRouteInfoRequestHeader.class);
 
@@ -74,7 +77,7 @@ public class ClientRequestProcessor implements NettyRequestProcessor {
         TopicRouteData topicRouteData = this.namesrvController.getRouteInfoManager().pickupTopicRouteData(requestHeader.getTopic());
 
         if (topicRouteData != null) {
-            //topic route info register success ,so disable namesrvReady check
+            // topic route info register success ,so disable namesrvReady check
             if (needCheckNamesrvReady.get()) {
                 needCheckNamesrvReady.set(false);
             }

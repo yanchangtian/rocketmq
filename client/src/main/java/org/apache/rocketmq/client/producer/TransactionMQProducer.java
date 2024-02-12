@@ -24,6 +24,7 @@ import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.remoting.protocol.NamespaceUtil;
 
 public class TransactionMQProducer extends DefaultMQProducer {
+
     private TransactionCheckListener transactionCheckListener;
     private int checkThreadPoolMinSize = 1;
     private int checkThreadPoolMaxSize = 1;
@@ -79,12 +80,10 @@ public class TransactionMQProducer extends DefaultMQProducer {
     }
 
     @Override
-    public TransactionSendResult sendMessageInTransaction(final Message msg,
-        final Object arg) throws MQClientException {
+    public TransactionSendResult sendMessageInTransaction(final Message msg, final Object arg) throws MQClientException {
         if (null == this.transactionListener) {
             throw new MQClientException("TransactionListener is null", null);
         }
-
         msg.setTopic(NamespaceUtil.wrapNamespace(this.getNamespace(), msg.getTopic()));
         return this.defaultMQProducerImpl.sendMessageInTransaction(msg, null, arg);
     }

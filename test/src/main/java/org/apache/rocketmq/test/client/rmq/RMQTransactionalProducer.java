@@ -30,6 +30,7 @@ import org.apache.rocketmq.test.clientinterface.AbstractMQProducer;
 import org.apache.rocketmq.test.sendresult.ResultWrapper;
 
 public class RMQTransactionalProducer extends AbstractMQProducer {
+
     private static Logger logger  = LoggerFactory.getLogger(RMQTransactionalProducer.class);
     private TransactionMQProducer producer = null;
     private String nsAddr = null;
@@ -75,6 +76,7 @@ public class RMQTransactionalProducer extends AbstractMQProducer {
         Message message = (Message) msg;
         try {
             long start = System.currentTimeMillis();
+            // 发送事务消息
             metaqResult = producer.sendMessageInTransaction(message, arg);
             this.msgRTs.addData(System.currentTimeMillis() - start);
             if (isDebug) {

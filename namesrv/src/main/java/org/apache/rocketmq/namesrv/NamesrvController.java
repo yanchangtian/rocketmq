@@ -231,10 +231,8 @@ public class NamesrvController {
             this.remotingServer.registerDefaultProcessor(
                     new ClusterTestRequestProcessor(this, namesrvConfig.getProductEnvName()), this.defaultExecutor);
         } else {
-            // 支持仅临时获取 route info
-            // Support get route info only temporarily
-            ClientRequestProcessor clientRequestProcessor = new ClientRequestProcessor(this);
-            this.remotingServer.registerProcessor(RequestCode.GET_ROUTEINFO_BY_TOPIC, clientRequestProcessor, this.clientRequestExecutor);
+            // ClientRequestProcessor : 通过 topic 获取 route info
+            this.remotingServer.registerProcessor(RequestCode.GET_ROUTEINFO_BY_TOPIC, new ClientRequestProcessor(this), this.clientRequestExecutor);
             this.remotingServer.registerDefaultProcessor(new DefaultRequestProcessor(this), this.defaultExecutor);
         }
     }
@@ -247,6 +245,7 @@ public class NamesrvController {
 
         this.remotingServer.start();
 
+        // 在由操作系统选择可用端口的测试场景中, 将侦听端口设置回配置
         // In test scenarios where it is up to OS to pick up an available port, set the listening port back to config
         if (0 == nettyServerConfig.getListenPort()) {
             nettyServerConfig.setListenPort(this.remotingServer.localListenPort());

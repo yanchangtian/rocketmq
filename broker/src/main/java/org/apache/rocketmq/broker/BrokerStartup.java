@@ -47,7 +47,10 @@ public class BrokerStartup {
     public static final SystemConfigFileHelper CONFIG_FILE_HELPER = new SystemConfigFileHelper();
 
     public static void main(String[] args) {
-        start(createBrokerController(args));
+        // 创建并初始化 broker controller
+        BrokerController brokerController = createBrokerController(args);
+        // 启动 broker controller
+        start(brokerController);
     }
 
     public static BrokerController start(BrokerController controller) {

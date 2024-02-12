@@ -750,25 +750,17 @@ public class BrokerController {
     public boolean initializeMessageStore() {
         boolean result = true;
         try {
-            DefaultMessageStore defaultMessageStore;
-            if (this.messageStoreConfig.isEnableRocksDBStore()) {
-                defaultMessageStore = new RocksDBMessageStore(this.messageStoreConfig, this.brokerStatsManager, this.messageArrivingListener, this.brokerConfig, topicConfigManager.getTopicConfigTable());
-            } else {
-                defaultMessageStore = new DefaultMessageStore(this.messageStoreConfig, this.brokerStatsManager, this.messageArrivingListener, this.brokerConfig, topicConfigManager.getTopicConfigTable());
-            }
+            DefaultMessageStore defaultMessageStore = getDefaultMessageStore();
 
             if (messageStoreConfig.isEnableDLegerCommitLog()) {
-                DLedgerRoleChangeHandler roleChangeHandler =
-                    new DLedgerRoleChangeHandler(this, defaultMessageStore);
-                ((DLedgerCommitLog) defaultMessageStore.getCommitLog())
-                    .getdLedgerServer().getDLedgerLeaderElector().addRoleChangeHandler(roleChangeHandler);
+                DLedgerRoleChangeHandler roleChangeHandler = new DLedgerRoleChangeHandler(this, defaultMessageStore);
+                ((DLedgerCommitLog) defaultMessageStore.getCommitLog()).getdLedgerServer().getDLedgerLeaderElector().addRoleChangeHandler(roleChangeHandler);
             }
 
             this.brokerStats = new BrokerStats(defaultMessageStore);
 
             // Load store plugin
-            MessageStorePluginContext context = new MessageStorePluginContext(
-                messageStoreConfig, brokerStatsManager, messageArrivingListener, brokerConfig, configuration);
+            MessageStorePluginContext context = new MessageStorePluginContext(messageStoreConfig, brokerStatsManager, messageArrivingListener, brokerConfig, configuration);
             this.messageStore = MessageStoreFactory.build(context, defaultMessageStore);
             this.messageStore.getDispatcherList().addFirst(new CommitLogDispatcherCalcBitMap(this.brokerConfig, this.consumerFilterManager));
             if (messageStoreConfig.isTimerWheelEnable()) {
@@ -785,18 +777,29 @@ public class BrokerController {
         return result;
     }
 
-    public boolean initialize() throws CloneNotSupportedException {
+    private DefaultMessageStore getDefaultMessageStore() throws IOException {
+        DefaultMessageStore defaultMessageStore;
+        if (this.messageStoreConfig.isEnableRocksDBStore()) {
+            defaultMessageStore = new RocksDBMessageStore(this.messageStoreConfig, this.brokerStatsManager, this.messageArrivingListener, this.brokerConfig, topicConfigManager.getTopicConfigTable());
+        } else {
+            defaultMessageStore = new DefaultMessageStore(this.messageStoreConfig, this.brokerStatsManager, this.messageArrivingListener, this.brokerConfig, topicConfigManager.getTopicConfigTable());
+        }
+        return defaultMessageStore;
+    }
 
+    public boolean initialize() throws CloneNotSupportedException {
+        // 1. 从本地文件中加载信息
+        // topicConfig, topicQueueMapping, consumerOffset, subscriptionGroup, consumerFilter, consumerOrderInfo
         boolean result = this.initializeMetadata();
         if (!result) {
             return false;
         }
-
+        // 2. 初始化消息存储对象
         result = this.initializeMessageStore();
         if (!result) {
             return false;
         }
-
+        // 3. 恢复并初始化服务
         return this.recoverAndInitService();
     }
 
@@ -818,7 +821,7 @@ public class BrokerController {
             result = result && this.timerMessageStore.load();
         }
 
-        //scheduleMessageService load after messageStore load success
+        // scheduleMessageService load after messageStore load success
         result = result && this.scheduleMessageService.load();
 
         for (BrokerAttachedPlugin brokerAttachedPlugin : brokerAttachedPlugins) {
@@ -951,10 +954,8 @@ public class BrokerController {
     private void initialTransaction() {
         this.transactionalMessageService = ServiceProvider.loadClass(TransactionalMessageService.class);
         if (null == this.transactionalMessageService) {
-            this.transactionalMessageService = new TransactionalMessageServiceImpl(
-                new TransactionalMessageBridge(this, this.getMessageStore()));
-            LOG.warn("Load default transaction message hook service: {}",
-                TransactionalMessageServiceImpl.class.getSimpleName());
+            this.transactionalMessageService = new TransactionalMessageServiceImpl(new TransactionalMessageBridge(this, this.getMessageStore()));
+            LOG.warn("Load default transaction message hook service: {}", TransactionalMessageServiceImpl.class.getSimpleName());
         }
         this.transactionalMessageCheckListener = ServiceProvider.loadClass(
             AbstractTransactionalMessageCheckListener.class);

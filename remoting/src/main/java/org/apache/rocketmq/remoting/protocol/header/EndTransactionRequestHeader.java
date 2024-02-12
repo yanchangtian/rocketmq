@@ -25,17 +25,18 @@ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
 import org.apache.rocketmq.remoting.rpc.RpcRequestHeader;
 
 public class EndTransactionRequestHeader extends RpcRequestHeader {
+
     @CFNotNull
     private String producerGroup;
     @CFNotNull
     private Long tranStateTableOffset;
     @CFNotNull
     private Long commitLogOffset;
+    /**
+     * TRANSACTION_COMMIT_TYPE / TRANSACTION_ROLLBACK_TYPE / TRANSACTION_NOT_TYPE
+     */
     @CFNotNull
-    private Integer commitOrRollback; // TRANSACTION_COMMIT_TYPE
-    // TRANSACTION_ROLLBACK_TYPE
-    // TRANSACTION_NOT_TYPE
-
+    private Integer commitOrRollback;
     @CFNullable
     private Boolean fromTransactionCheck = false;
 

@@ -26,6 +26,7 @@ import java.util.Set;
 import org.apache.rocketmq.common.filter.ExpressionType;
 
 public class SubscriptionData implements Comparable<SubscriptionData> {
+
     public final static String SUB_ALL = "*";
     private boolean classFilterMode = false;
     private String topic;

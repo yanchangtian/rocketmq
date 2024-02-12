@@ -523,33 +523,31 @@ public class MQClientAPIImpl implements NameServerUpdateCallback {
 
     }
 
-    public SendResult sendMessage(
-        final String addr,
-        final String brokerName,
-        final Message msg,
-        final SendMessageRequestHeader requestHeader,
-        final long timeoutMillis,
-        final CommunicationMode communicationMode,
-        final SendMessageContext context,
-        final DefaultMQProducerImpl producer
-    ) throws RemotingException, MQBrokerException, InterruptedException {
+    public SendResult sendMessage(final String addr,
+                                  final String brokerName,
+                                  final Message msg,
+                                  final SendMessageRequestHeader requestHeader,
+                                  final long timeoutMillis,
+                                  final CommunicationMode communicationMode,
+                                  final SendMessageContext context,
+                                  final DefaultMQProducerImpl producer) throws RemotingException, MQBrokerException, InterruptedException {
+
         return sendMessage(addr, brokerName, msg, requestHeader, timeoutMillis, communicationMode, null, null, null, 0, context, producer);
     }
 
-    public SendResult sendMessage(
-        final String addr,
-        final String brokerName,
-        final Message msg,
-        final SendMessageRequestHeader requestHeader,
-        final long timeoutMillis,
-        final CommunicationMode communicationMode,
-        final SendCallback sendCallback,
-        final TopicPublishInfo topicPublishInfo,
-        final MQClientInstance instance,
-        final int retryTimesWhenSendFailed,
-        final SendMessageContext context,
-        final DefaultMQProducerImpl producer
-    ) throws RemotingException, MQBrokerException, InterruptedException {
+    public SendResult sendMessage(final String addr,
+                                  final String brokerName,
+                                  final Message msg,
+                                  final SendMessageRequestHeader requestHeader,
+                                  final long timeoutMillis,
+                                  final CommunicationMode communicationMode,
+                                  final SendCallback sendCallback,
+                                  final TopicPublishInfo topicPublishInfo,
+                                  final MQClientInstance instance,
+                                  final int retryTimesWhenSendFailed,
+                                  final SendMessageContext context,
+                                  final DefaultMQProducerImpl producer) throws RemotingException, MQBrokerException, InterruptedException {
+
         long beginStartTime = System.currentTimeMillis();
         RemotingCommand request = null;
         String msgType = msg.getProperty(MessageConst.PROPERTY_MESSAGE_TYPE);
@@ -598,13 +596,12 @@ public class MQClientAPIImpl implements NameServerUpdateCallback {
         return null;
     }
 
-    private SendResult sendMessageSync(
-        final String addr,
-        final String brokerName,
-        final Message msg,
-        final long timeoutMillis,
-        final RemotingCommand request
-    ) throws RemotingException, MQBrokerException, InterruptedException {
+    private SendResult sendMessageSync(final String addr,
+                                       final String brokerName,
+                                       final Message msg,
+                                       final long timeoutMillis,
+                                       final RemotingCommand request) throws RemotingException, MQBrokerException, InterruptedException {
+
         RemotingCommand response = this.remotingClient.invokeSync(addr, request, timeoutMillis);
         assert response != null;
         return this.processSendResponse(brokerName, msg, response, addr);
@@ -1337,11 +1334,10 @@ public class MQClientAPIImpl implements NameServerUpdateCallback {
         throw new MQBrokerException(response.getCode(), response.getRemark(), addr);
     }
 
-    public List<String> getConsumerIdListByGroup(
-        final String addr,
-        final String consumerGroup,
-        final long timeoutMillis) throws RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException,
-        MQBrokerException, InterruptedException {
+    public List<String> getConsumerIdListByGroup(final String addr,
+                                                 final String consumerGroup,
+                                                 final long timeoutMillis) throws RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException, MQBrokerException, InterruptedException {
+
         GetConsumerListByGroupRequestHeader requestHeader = new GetConsumerListByGroupRequestHeader();
         requestHeader.setConsumerGroup(consumerGroup);
         RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.GET_CONSUMER_LIST_BY_GROUP, requestHeader);
@@ -1472,11 +1468,10 @@ public class MQClientAPIImpl implements NameServerUpdateCallback {
         this.remotingClient.invokeOneway(MixAll.brokerVIPChannel(this.clientConfig.isVipChannelEnabled(), addr), request, timeoutMillis);
     }
 
-    public int sendHeartbeat(
-        final String addr,
-        final HeartbeatData heartbeatData,
-        final long timeoutMillis
-    ) throws RemotingException, MQBrokerException, InterruptedException {
+    public int sendHeartbeat(final String addr,
+                             final HeartbeatData heartbeatData,
+                             final long timeoutMillis) throws RemotingException, MQBrokerException, InterruptedException {
+
         RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.HEART_BEAT, new HeartbeatRequestHeader());
         request.setLanguage(clientConfig.getLanguage());
         request.setBody(heartbeatData.encode());
@@ -1543,14 +1538,12 @@ public class MQClientAPIImpl implements NameServerUpdateCallback {
         throw new MQBrokerException(response.getCode(), response.getRemark(), addr);
     }
 
-    public void endTransactionOneway(
-        final String addr,
-        final EndTransactionRequestHeader requestHeader,
-        final String remark,
-        final long timeoutMillis
-    ) throws RemotingException, InterruptedException {
-        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.END_TRANSACTION, requestHeader);
+    public void endTransactionOneway(final String addr,
+                                     final EndTransactionRequestHeader requestHeader,
+                                     final String remark,
+                                     final long timeoutMillis) throws RemotingException, InterruptedException {
 
+        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.END_TRANSACTION, requestHeader);
         request.setRemark(remark);
         this.remotingClient.invokeOneway(addr, request, timeoutMillis);
     }

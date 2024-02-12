@@ -25,22 +25,34 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.common.MixAll;
 
 /**
+ * <p>
+ *     该类描述了典型 broker cluster (在复制中) 的详细信息.
+ *     它所属的 cluster (在分片中) 名称, 以及该 cluster 的所有单实例信息
+ * </p>
+ *
  * The class describes that a typical broker cluster's (in replication) details: the cluster (in sharding) name
  * that it belongs to, and all the single instance information for this cluster.
  */
 public class BrokerData implements Comparable<BrokerData> {
-    private String cluster;
-    private String brokerName;
 
+    /**
+     * broker 所属的 broker cluster 名称
+     */
+    private String cluster;
+    /**
+     * broker 名称
+     */
+    private String brokerName;
     /**
      * The container that store the all single instances for the current broker replication cluster.
-     * The key is the brokerId, and the value is the address of the single broker instance.
      */
-    private HashMap<Long, String> brokerAddrs;
+    private HashMap<Long/*broker id*/, String/*broker address*/> brokerAddrs;
     private String zoneName;
     private final Random random = new Random();
-
     /**
+     * <p>
+     *     是否启用代理master, 用于旧版本HA适配.
+     * </p>
      * Enable acting master or not, used for old version HA adaption,
      */
     private boolean enableActingMaster = false;
