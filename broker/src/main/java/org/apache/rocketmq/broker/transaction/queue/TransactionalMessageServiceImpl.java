@@ -607,6 +607,7 @@ public class TransactionalMessageServiceImpl implements TransactionalMessageServ
     @Override
     public boolean deletePrepareMessage(MessageExt messageExt) {
         Integer queueId = messageExt.getQueueId();
+        // 取出 MessageQueueOpContext, 如果为空则初始化
         MessageQueueOpContext mqContext = deleteContext.get(queueId);
         if (mqContext == null) {
             mqContext = new MessageQueueOpContext(System.currentTimeMillis(), 20000);
@@ -618,6 +619,7 @@ public class TransactionalMessageServiceImpl implements TransactionalMessageServ
 
         String data = messageExt.getQueueOffset() + TransactionalMessageUtil.OFFSET_SEPARATOR;
         try {
+            // 将 queueOffset 加入阻塞队列中
             boolean res = mqContext.getContextQueue().offer(data, 100, TimeUnit.MILLISECONDS);
             if (res) {
                 int totalSize = mqContext.getTotalSize().addAndGet(data.length());
@@ -703,8 +705,7 @@ public class TransactionalMessageServiceImpl implements TransactionalMessageServ
         int l = sb.length() - moreDataLength;
         mqContext.getTotalSize().addAndGet(-l);
         mqContext.setLastWriteTimestamp(System.currentTimeMillis());
-        return new Message(opTopic, TransactionalMessageUtil.REMOVE_TAG,
-                sb.toString().getBytes(TransactionalMessageUtil.CHARSET));
+        return new Message(opTopic, TransactionalMessageUtil.REMOVE_TAG, sb.toString().getBytes(TransactionalMessageUtil.CHARSET));
     }
 
     public long batchSendOpMessage() {
@@ -717,18 +718,18 @@ public class TransactionalMessageServiceImpl implements TransactionalMessageServ
             boolean overSize = false;
             for (Map.Entry<Integer, MessageQueueOpContext> entry : deleteContext.entrySet()) {
                 MessageQueueOpContext mqContext = entry.getValue();
-                //no msg in contextQueue
-                if (mqContext.getTotalSize().get() <= 0 || mqContext.getContextQueue().size() == 0 ||
-                        // wait for the interval
-                        mqContext.getTotalSize().get() < maxSize &&
-                                startTime - mqContext.getLastWriteTimestamp() < interval) {
+                // no msg in contextQueue wait for the interval
+                if (mqContext.getTotalSize().get() <= 0
+                        || mqContext.getContextQueue().size() == 0
+                        || mqContext.getTotalSize().get() < maxSize
+                        && startTime - mqContext.getLastWriteTimestamp() < interval) {
                     continue;
                 }
 
                 if (sendMap == null) {
                     sendMap = new HashMap<>();
                 }
-
+                // 从 opQueue 中获取 opMessage
                 Message opMsg = getOpMessage(entry.getKey(), null);
                 if (opMsg == null) {
                     continue;
@@ -743,15 +744,14 @@ public class TransactionalMessageServiceImpl implements TransactionalMessageServ
             if (sendMap != null) {
                 for (Map.Entry<Integer, Message> entry : sendMap.entrySet()) {
                     if (!this.transactionalMessageBridge.writeOp(entry.getKey(), entry.getValue())) {
-                        log.error("Transaction batch op message write failed. body is {}, queueId is {}",
-                                new String(entry.getValue().getBody(), TransactionalMessageUtil.CHARSET), entry.getKey());
+                        log.error("Transaction batch op message write failed. body is {}, queueId is {}", new String(entry.getValue().getBody(), TransactionalMessageUtil.CHARSET), entry.getKey());
                     }
                 }
             }
 
             log.debug("Send op message queueIds={}", sendMap == null ? null : sendMap.keySet());
 
-            //wait for next batch remove
+            // wait for next batch remove
             long wakeupTimestamp = firstTimestamp + interval;
             if (!overSize && wakeupTimestamp > startTime) {
                 return wakeupTimestamp;

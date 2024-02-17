@@ -1,9 +1,13 @@
 package org.apache.rocketmq.test;
 
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.MessageQueueSelector;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
+
+import java.util.List;
 
 public class MyProducer {
 
@@ -35,6 +39,30 @@ public class MyProducer {
         }
 
         producer.shutdown();
+    }
+
+    /**
+     * 发送有序消息.
+     *  有序消息可以分为 全局有序 和 分区有序
+     *      分区有序:将需要保证顺序的消息发送到同一个 consumerQueue 中, consumerQueue由单一消费者顺序消费
+     * @throws Exception
+     */
+    public void sendOrderMsg() throws Exception {
+        DefaultMQProducer producer = new DefaultMQProducer("producergroup");
+        producer.setNamesrvAddr("namesrvaddr");
+        producer.start();
+
+        producer.send(new Message(), new MessageQueueSelector() {
+
+            @Override
+            public MessageQueue select(List<MessageQueue> mqs, Message msg, Object arg) {
+                // 根据 orderId 选择发送的 MessageQueue
+                Long orderId = (Long) arg;
+                long index = orderId % mqs.size();
+                return mqs.get((int) index);
+            }
+
+        }, 1L);
     }
 
 }

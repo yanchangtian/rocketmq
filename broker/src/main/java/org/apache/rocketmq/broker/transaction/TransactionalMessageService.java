@@ -45,7 +45,7 @@ public interface TransactionalMessageService {
     CompletableFuture<PutMessageResult> asyncPrepareMessage(MessageExtBrokerInner messageInner);
 
     /**
-     * Delete prepare message when this message has been committed or rolled back.
+     * 当 Half 消息已提交或回滚时, 删除此消息
      *
      * @param messageExt
      */

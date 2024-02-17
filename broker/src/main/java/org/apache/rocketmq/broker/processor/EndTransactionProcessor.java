@@ -133,26 +133,27 @@ public class EndTransactionProcessor implements NettyRequestProcessor {
                             requestHeader.getMsgId(), requestHeader.getCommitLogOffset());
                     return response;
                 }
-                // (2) 检查取出的 Half 消息
+                // 检查取出的 Half 消息
                 RemotingCommand res = checkPrepareMessage(result.getPrepareMessage(), requestHeader);
                 if (res.getCode() == ResponseCode.SUCCESS) {
-                    // (3) 将 Half 消息转换为 MessageExtBrokerInner
+                    // (3) 将 Half 消息转换为 MessageExtBrokerInner, 将 topic 和 queueId 替换为真实的
                     MessageExtBrokerInner msgInner = endMessageTransaction(result.getPrepareMessage());
                     msgInner.setSysFlag(MessageSysFlag.resetTransactionValue(msgInner.getSysFlag(), requestHeader.getCommitOrRollback()));
                     msgInner.setQueueOffset(requestHeader.getTranStateTableOffset());
                     msgInner.setPreparedTransactionOffset(requestHeader.getCommitLogOffset());
                     msgInner.setStoreTimestamp(result.getPrepareMessage().getStoreTimestamp());
                     MessageAccessor.clearProperty(msgInner, MessageConst.PROPERTY_TRANSACTION_PREPARED);
-                    // (4) 存储消息
+                    // (4) 存储真实的消息
                     RemotingCommand sendResult = sendFinalMessage(msgInner);
                     if (sendResult.getCode() == ResponseCode.SUCCESS) {
+                        // (5) 删除消息, 将消息放入 opQueue 中
                         this.brokerController.getTransactionalMessageService().deletePrepareMessage(result.getPrepareMessage());
-                        // successful committed, then total num of half-messages minus 1
+                        // 成功提交, 则 Half 消息总数减1
                         this.brokerController.getTransactionalMessageService().getTransactionMetrics().addAndGet(msgInner.getTopic(), -1);
                         BrokerMetricsManager.commitMessagesTotal.add(1, BrokerMetricsManager.newAttributesBuilder()
                                 .put(LABEL_TOPIC, msgInner.getTopic())
                                 .build());
-                        // record the commit latency.
+                        // 记录提交延迟
                         Long commitLatency = (System.currentTimeMillis() - result.getPrepareMessage().getBornTimestamp()) / 1000;
                         BrokerMetricsManager.transactionFinishLatency.record(commitLatency, BrokerMetricsManager.newAttributesBuilder()
                                 .put(LABEL_TOPIC, msgInner.getTopic())
@@ -167,14 +168,17 @@ public class EndTransactionProcessor implements NettyRequestProcessor {
             // (1) 根据 commitLogOffset 取出 Half 消息
             result = this.brokerController.getTransactionalMessageService().rollbackMessage(requestHeader);
             if (result.getResponseCode() == ResponseCode.SUCCESS) {
+                // 判断是否拒绝消息
                 if (rejectCommitOrRollback(requestHeader, result.getPrepareMessage())) {
                     response.setCode(ResponseCode.ILLEGAL_OPERATION);
                     LOGGER.warn("Message rollback fail [producer end]. currentTimeMillis - bornTime > checkImmunityTime, msgId={},commitLogOffset={}, wait check",
                             requestHeader.getMsgId(), requestHeader.getCommitLogOffset());
                     return response;
                 }
+                // 检查取出的 Half 消息
                 RemotingCommand res = checkPrepareMessage(result.getPrepareMessage(), requestHeader);
                 if (res.getCode() == ResponseCode.SUCCESS) {
+                    // 删除消息, 将消息放入 opQueue 中
                     this.brokerController.getTransactionalMessageService().deletePrepareMessage(result.getPrepareMessage());
                     // roll back, then total num of half-messages minus 1
                     this.brokerController.getTransactionalMessageService().getTransactionMetrics().addAndGet(result.getPrepareMessage().getProperty(MessageConst.PROPERTY_REAL_TOPIC), -1);

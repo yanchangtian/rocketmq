@@ -54,6 +54,7 @@ public class TransactionalOpBatchService extends ServiceThread {
                 interval = 0;
                 wakeup();
             }
+            // 等待运行
             this.waitForRunning(interval);
         }
         LOGGER.info("End transaction op batch thread!");
@@ -63,4 +64,5 @@ public class TransactionalOpBatchService extends ServiceThread {
     protected void onWaitEnd() {
         wakeupTimestamp = transactionalMessageService.batchSendOpMessage();
     }
+
 }

@@ -35,12 +35,10 @@ public abstract class ServiceThread implements Runnable {
     protected volatile boolean stopped = false;
     protected boolean isDaemon = false;
 
-    //Make it able to restart the thread
+    // Make it able to restart the thread
     private final AtomicBoolean started = new AtomicBoolean(false);
 
-    public ServiceThread() {
-
-    }
+    public ServiceThread() {}
 
     public abstract String getServiceName();
 
@@ -138,4 +136,5 @@ public abstract class ServiceThread implements Runnable {
     public void setDaemon(boolean daemon) {
         isDaemon = daemon;
     }
+
 }
