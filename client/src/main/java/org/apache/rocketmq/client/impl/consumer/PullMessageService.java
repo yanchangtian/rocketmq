@@ -28,7 +28,11 @@ import org.apache.rocketmq.common.utils.ThreadUtils;
 import org.apache.rocketmq.logging.org.slf4j.Logger;
 import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
 
+/**
+ * 消息拉取服务. 负责从Broker拉取消息, 然后提交给 ConsumeMessageService 消费
+ */
 public class PullMessageService extends ServiceThread {
+
     private final Logger logger = LoggerFactory.getLogger(PullMessageService.class);
     private final LinkedBlockingQueue<MessageRequest> messageRequestQueue = new LinkedBlockingQueue<>();
 
@@ -128,6 +132,7 @@ public class PullMessageService extends ServiceThread {
 
         while (!this.isStopped()) {
             try {
+                // 检索并删除此队列的头部, 如有必要, 则等待直到有元素可用
                 MessageRequest messageRequest = this.messageRequestQueue.take();
                 if (messageRequest.getMessageRequestMode() == MessageRequestMode.POP) {
                     this.popMessage((PopRequest) messageRequest);

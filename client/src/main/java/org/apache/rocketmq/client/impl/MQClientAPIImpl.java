@@ -806,13 +806,12 @@ public class MQClientAPIImpl implements NameServerUpdateCallback {
         return sendResult;
     }
 
-    public PullResult pullMessage(
-        final String addr,
-        final PullMessageRequestHeader requestHeader,
-        final long timeoutMillis,
-        final CommunicationMode communicationMode,
-        final PullCallback pullCallback
-    ) throws RemotingException, MQBrokerException, InterruptedException {
+    public PullResult pullMessage(final String addr,
+                                  final PullMessageRequestHeader requestHeader,
+                                  final long timeoutMillis,
+                                  final CommunicationMode communicationMode,
+                                  final PullCallback pullCallback) throws RemotingException, MQBrokerException, InterruptedException {
+
         RemotingCommand request;
         if (PullSysFlag.hasLitePullFlag(requestHeader.getSysFlag())) {
             request = RemotingCommand.createRequestCommand(RequestCode.LITE_PULL_MESSAGE, requestHeader);
@@ -1034,19 +1033,18 @@ public class MQClientAPIImpl implements NameServerUpdateCallback {
         });
     }
 
-    private PullResult pullMessageSync(
-        final String addr,
-        final RemotingCommand request,
-        final long timeoutMillis
-    ) throws RemotingException, InterruptedException, MQBrokerException {
+    private PullResult pullMessageSync(final String addr,
+                                       final RemotingCommand request,
+                                       final long timeoutMillis) throws RemotingException, InterruptedException, MQBrokerException {
+
         RemotingCommand response = this.remotingClient.invokeSync(addr, request, timeoutMillis);
         assert response != null;
         return this.processPullResponse(response, addr);
     }
 
-    private PullResult processPullResponse(
-        final RemotingCommand response,
-        final String addr) throws MQBrokerException, RemotingCommandException {
+    private PullResult processPullResponse(final RemotingCommand response,
+                                           final String addr) throws MQBrokerException, RemotingCommandException {
+
         PullStatus pullStatus = PullStatus.NO_NEW_MSG;
         switch (response.getCode()) {
             case ResponseCode.SUCCESS:
@@ -1061,13 +1059,11 @@ public class MQClientAPIImpl implements NameServerUpdateCallback {
             case ResponseCode.PULL_OFFSET_MOVED:
                 pullStatus = PullStatus.OFFSET_ILLEGAL;
                 break;
-
             default:
                 throw new MQBrokerException(response.getCode(), response.getRemark(), addr);
         }
 
-        PullMessageResponseHeader responseHeader =
-            (PullMessageResponseHeader) response.decodeCommandCustomHeader(PullMessageResponseHeader.class);
+        PullMessageResponseHeader responseHeader = (PullMessageResponseHeader) response.decodeCommandCustomHeader(PullMessageResponseHeader.class);
 
         return new PullResultExt(pullStatus, responseHeader.getNextBeginOffset(), responseHeader.getMinOffset(),
             responseHeader.getMaxOffset(), null, responseHeader.getSuggestWhichBrokerId(), response.getBody(), responseHeader.getOffsetDelta());

@@ -95,9 +95,10 @@ public class ClientMetadata {
         return brokerAddrTable;
     }
 
-    public static ConcurrentMap<MessageQueue, String> topicRouteData2EndpointsForStaticTopic(final String topic, final TopicRouteData route) {
-        if (route.getTopicQueueMappingByBroker() == null
-                || route.getTopicQueueMappingByBroker().isEmpty()) {
+    public static ConcurrentMap<MessageQueue, String> topicRouteData2EndpointsForStaticTopic(final String topic,
+                                                                                             final TopicRouteData route) {
+
+        if (route.getTopicQueueMappingByBroker() == null || route.getTopicQueueMappingByBroker().isEmpty()) {
             return new ConcurrentHashMap<>();
         }
         ConcurrentMap<MessageQueue, String> mqEndPointsOfBroker = new ConcurrentHashMap<>();
@@ -116,7 +117,7 @@ public class ClientMetadata {
 
         for (Map.Entry<String, Map<String, TopicQueueMappingInfo>> mapEntry : mappingInfosByScope.entrySet()) {
             String scope = mapEntry.getKey();
-            Map<String, TopicQueueMappingInfo> topicQueueMappingInfoMap =  mapEntry.getValue();
+            Map<String, TopicQueueMappingInfo> topicQueueMappingInfoMap = mapEntry.getValue();
             ConcurrentMap<MessageQueue, TopicQueueMappingInfo> mqEndPoints = new ConcurrentHashMap<>();
             List<Map.Entry<String, TopicQueueMappingInfo>> mappingInfos = new ArrayList<>(topicQueueMappingInfoMap.entrySet());
             mappingInfos.sort((o1, o2) -> (int) (o2.getValue().getEpoch() - o1.getValue().getEpoch()));
@@ -138,7 +139,7 @@ public class ClientMetadata {
             }
 
 
-            //accomplish the static logic queues
+            // accomplish the static logic queues
             for (int i = 0; i < maxTotalNums; i++) {
                 MessageQueue mq = new MessageQueue(topic, TopicQueueMappingUtils.getMockBrokerName(scope), i);
                 if (!mqEndPoints.containsKey(mq)) {

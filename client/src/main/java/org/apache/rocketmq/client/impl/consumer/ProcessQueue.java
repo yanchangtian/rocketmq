@@ -37,6 +37,7 @@ import org.apache.rocketmq.remoting.protocol.body.ProcessQueueInfo;
  * Queue consumption snapshot
  */
 public class ProcessQueue {
+
     public final static long REBALANCE_LOCK_MAX_LIVE_TIME =
         Long.parseLong(System.getProperty("rocketmq.client.rebalance.lockMaxLiveTime", "30000"));
     public final static long REBALANCE_LOCK_INTERVAL = Long.parseLong(System.getProperty("rocketmq.client.rebalance.lockInterval", "20000"));

@@ -25,6 +25,9 @@ import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.remoting.protocol.route.QueueData;
 import org.apache.rocketmq.remoting.protocol.route.TopicRouteData;
 
+/**
+ * producer 核心类
+ */
 public class TopicPublishInfo {
 
     private boolean orderTopic = false;

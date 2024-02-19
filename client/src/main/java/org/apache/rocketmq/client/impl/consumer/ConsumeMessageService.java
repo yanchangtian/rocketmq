@@ -21,7 +21,11 @@ import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.remoting.protocol.body.ConsumeMessageDirectlyResult;
 
+/**
+ * 消费消息的服务. 消费 PullMessageService 从 broker 拉取回来的消息
+ */
 public interface ConsumeMessageService {
+
     void start();
 
     void shutdown(long awaitTerminateMillis);
@@ -36,14 +40,13 @@ public interface ConsumeMessageService {
 
     ConsumeMessageDirectlyResult consumeMessageDirectly(final MessageExt msg, final String brokerName);
 
-    void submitConsumeRequest(
-        final List<MessageExt> msgs,
-        final ProcessQueue processQueue,
-        final MessageQueue messageQueue,
-        final boolean dispathToConsume);
+    void submitConsumeRequest(final List<MessageExt> msgs,
+                              final ProcessQueue processQueue,
+                              final MessageQueue messageQueue,
+                              final boolean dispathToConsume);
 
-    void submitPopConsumeRequest(
-        final List<MessageExt> msgs,
-        final PopProcessQueue processQueue,
-        final MessageQueue messageQueue);
+    void submitPopConsumeRequest(final List<MessageExt> msgs,
+                                 final PopProcessQueue processQueue,
+                                 final MessageQueue messageQueue);
+
 }

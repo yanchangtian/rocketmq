@@ -43,7 +43,10 @@ public class BrokerData implements Comparable<BrokerData> {
      * broker 名称
      */
     private String brokerName;
+
     /**
+     * 存储当前 broker 复制集群的所有单个实例的容器, 键是 brokerId, 值是单个 broker 实例的地址.
+     *
      * The container that store the all single instances for the current broker replication cluster.
      */
     private HashMap<Long/*broker id*/, String/*broker address*/> brokerAddrs;

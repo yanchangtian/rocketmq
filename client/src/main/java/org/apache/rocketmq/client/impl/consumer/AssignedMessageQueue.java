@@ -181,6 +181,7 @@ public class AssignedMessageQueue {
     }
 
     private class MessageQueueState {
+
         private MessageQueue messageQueue;
         private ProcessQueue processQueue;
         private volatile boolean paused = false;

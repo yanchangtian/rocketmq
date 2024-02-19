@@ -98,6 +98,8 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
     private String createTopicKey = TopicValidator.AUTO_CREATE_TOPIC_KEY_TOPIC;
 
     /**
+     * 默认 topic 创建的 queue 数量
+     *
      * Number of queues to create per default topic.
      */
     private volatile int defaultTopicQueueNums = 4;

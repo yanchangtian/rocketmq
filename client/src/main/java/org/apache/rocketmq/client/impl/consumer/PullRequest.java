@@ -20,6 +20,7 @@ import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.common.message.MessageRequestMode;
 
 public class PullRequest implements MessageRequest {
+
     private String consumerGroup;
     private MessageQueue messageQueue;
     private ProcessQueue processQueue;

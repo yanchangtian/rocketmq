@@ -25,6 +25,9 @@ import java.util.HashSet;
 import java.util.Set;
 import org.apache.rocketmq.common.filter.ExpressionType;
 
+/**
+ * 订阅数据
+ */
 public class SubscriptionData implements Comparable<SubscriptionData> {
 
     public final static String SUB_ALL = "*";
@@ -39,9 +42,7 @@ public class SubscriptionData implements Comparable<SubscriptionData> {
     @JSONField(serialize = false)
     private String filterClassSource;
 
-    public SubscriptionData() {
-
-    }
+    public SubscriptionData() {}
 
     public SubscriptionData(String topic, String subString) {
         super();
@@ -180,4 +181,5 @@ public class SubscriptionData implements Comparable<SubscriptionData> {
         String otherValue = other.topic + "@" + other.subString;
         return thisValue.compareTo(otherValue);
     }
+
 }

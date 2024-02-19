@@ -91,4 +91,5 @@ public class HeartbeatData extends RemotingSerializable {
         heartbeatDataCopy.setClientID("");
         return JSON.toJSONString(heartbeatDataCopy).hashCode();
     }
+
 }

@@ -24,16 +24,19 @@ import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 
 /**
+ * Consumer管理消费位点(消费进度)的接口
+ *
  * Offset store interface
  */
 public interface OffsetStore {
+
     /**
      * Load
      */
     void load() throws MQClientException;
 
     /**
-     * Update the offset,store it in memory
+     * Update the offset, store it in memory
      */
     void updateOffset(final MessageQueue mq, final long offset, final boolean increaseOnly);
 
@@ -53,12 +56,16 @@ public interface OffsetStore {
     long readOffset(final MessageQueue mq, final ReadOffsetType type);
 
     /**
-     * Persist all offsets,may be in local storage or remote name server
+     * 保留所有偏移量
+     *
+     * Persist all offsets, may be in local storage or remote name server
      */
     void persistAll(final Set<MessageQueue> mqs);
 
     /**
-     * Persist the offset,may be in local storage or remote name server
+     * 保留指定偏移量
+     *
+     * Persist the offset, may be in local storage or remote name server
      */
     void persist(final MessageQueue mq);
 
@@ -77,6 +84,6 @@ public interface OffsetStore {
      * @param offset
      * @param isOneway
      */
-    void updateConsumeOffsetToBroker(MessageQueue mq, long offset, boolean isOneway) throws RemotingException,
-        MQBrokerException, InterruptedException, MQClientException;
+    void updateConsumeOffsetToBroker(MessageQueue mq, long offset, boolean isOneway) throws RemotingException, MQBrokerException, InterruptedException, MQClientException;
+
 }

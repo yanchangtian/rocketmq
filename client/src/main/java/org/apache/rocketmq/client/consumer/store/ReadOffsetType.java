@@ -17,6 +17,7 @@
 package org.apache.rocketmq.client.consumer.store;
 
 public enum ReadOffsetType {
+
     /**
      * From memory
      */
@@ -26,7 +27,8 @@ public enum ReadOffsetType {
      */
     READ_FROM_STORE,
     /**
-     * From memory,then from storage
+     * From memory, then from storage
      */
     MEMORY_FIRST_THEN_STORE;
+
 }

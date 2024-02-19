@@ -972,6 +972,7 @@ public class DefaultLitePullConsumerImpl implements MQConsumerInner {
                             final Object objLock = messageQueueLock.fetchLockObject(messageQueue);
                             synchronized (objLock) {
                                 if (pullResult.getMsgFoundList() != null && !pullResult.getMsgFoundList().isEmpty() && assignedMessageQueue.getSeekOffset(messageQueue) == -1) {
+                                    // 放入 processQueue 中
                                     processQueue.putMessage(pullResult.getMsgFoundList());
                                     submitConsumeRequest(new ConsumeRequest(pullResult.getMsgFoundList(), messageQueue, processQueue));
                                 }

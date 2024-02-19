@@ -89,6 +89,7 @@ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
 import static org.apache.rocketmq.remoting.rpc.ClientMetadata.topicRouteData2EndpointsForStaticTopic;
 
 public class MQClientInstance {
+
     private final static long LOCK_TIMEOUT_MILLIS = 3000;
     private final static Logger log = LoggerFactory.getLogger(MQClientInstance.class);
     private final ClientConfig clientConfig;
@@ -114,8 +115,8 @@ public class MQClientInstance {
     private final NettyClientConfig nettyClientConfig;
     private final MQClientAPIImpl mQClientAPIImpl;
     private final MQAdminImpl mQAdminImpl;
-    private final ConcurrentMap<String/* Topic */, TopicRouteData> topicRouteTable = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String/* Topic */, ConcurrentMap<MessageQueue, String/*brokerName*/>> topicEndPointsTable = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String/*Topic*/, TopicRouteData> topicRouteTable = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String/*Topic*/, ConcurrentMap<MessageQueue, String/*brokerName*/>> topicEndPointsTable = new ConcurrentHashMap<>();
     private final Lock lockNamesrv = new ReentrantLock();
     private final Lock lockHeartbeat = new ReentrantLock();
 
@@ -238,7 +239,9 @@ public class MQClientInstance {
         TopicPublishInfo info = new TopicPublishInfo();
         // TODO should check the usage of raw route, it is better to remove such field
         info.setTopicRouteData(route);
-        if (route.getOrderTopicConf() != null && route.getOrderTopicConf().length() > 0) {
+        // 1) getOrderTopicConf 优先级最高
+        if (route.getOrderTopicConf() != null && !route.getOrderTopicConf().isEmpty()) {
+            // brokerName:4;brokerName:4;brokerName:4
             String[] brokers = route.getOrderTopicConf().split(";");
             for (String broker : brokers) {
                 String[] item = broker.split(":");
@@ -248,11 +251,9 @@ public class MQClientInstance {
                     info.getMessageQueueList().add(mq);
                 }
             }
-
             info.setOrderTopic(true);
-        } else if (route.getOrderTopicConf() == null
-            && route.getTopicQueueMappingByBroker() != null
-            && !route.getTopicQueueMappingByBroker().isEmpty()) {
+        } else if (route.getOrderTopicConf() == null && route.getTopicQueueMappingByBroker() != null && !route.getTopicQueueMappingByBroker().isEmpty()) {
+            // 从 topicQueueMappingByBroker 中获取
             info.setOrderTopic(false);
             ConcurrentMap<MessageQueue, String> mqEndPoints = topicRouteData2EndpointsForStaticTopic(topic, route);
             info.getMessageQueueList().addAll(mqEndPoints.keySet());
@@ -546,6 +547,11 @@ public class MQClientInstance {
         return false;
     }
 
+    /**
+     * 发送心跳包到所有 broker
+     *
+     * @return
+     */
     public boolean sendHeartbeatToAllBrokerWithLock() {
         if (this.lockHeartbeat.tryLock()) {
             try {
@@ -672,7 +678,7 @@ public class MQClientInstance {
             log.warn("sending heartbeat, but no consumer and no producer. [{}]", this.clientId);
             return false;
         }
-
+        // broker 地址信息
         if (this.brokerAddrTable.isEmpty()) {
             return false;
         }
@@ -787,8 +793,10 @@ public class MQClientInstance {
         return true;
     }
 
-    public boolean updateTopicRouteInfoFromNameServer(final String topic, boolean isDefault,
-        DefaultMQProducer defaultMQProducer) {
+    public boolean updateTopicRouteInfoFromNameServer(final String topic,
+                                                      boolean isDefault,
+                                                      DefaultMQProducer defaultMQProducer) {
+
         try {
             if (this.lockNamesrv.tryLock(LOCK_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)) {
                 try {
@@ -811,7 +819,7 @@ public class MQClientInstance {
                         if (!changed) {
                             changed = this.isNeedUpdateTopicRouteInfo(topic);
                         } else {
-                            log.info("the topic[{}] route info changed, old[{}] ,new[{}]", topic, old, topicRouteData);
+                            log.info("the topic[{}] route info changed, old[{}], new[{}]", topic, old, topicRouteData);
                         }
 
                         if (changed) {

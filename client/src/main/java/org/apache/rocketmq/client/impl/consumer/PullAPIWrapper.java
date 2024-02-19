@@ -52,13 +52,16 @@ import org.apache.rocketmq.remoting.protocol.route.TopicRouteData;
 import org.apache.rocketmq.logging.org.slf4j.Logger;
 import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
 
+/**
+ * Consumer拉取消息的核心类
+ */
 public class PullAPIWrapper {
+
     private static final Logger log = LoggerFactory.getLogger(PullAPIWrapper.class);
     private final MQClientInstance mQClientFactory;
     private final String consumerGroup;
     private final boolean unitMode;
-    private ConcurrentMap<MessageQueue, AtomicLong/* brokerId */> pullFromWhichNodeTable =
-        new ConcurrentHashMap<>(32);
+    private ConcurrentMap<MessageQueue, AtomicLong/* brokerId */> pullFromWhichNodeTable = new ConcurrentHashMap<>(32);
     private volatile boolean connectBrokerByUser = false;
     private volatile long defaultBrokerId = MixAll.MASTER_ID;
     private Random random = new Random(System.nanoTime());
@@ -177,21 +180,24 @@ public class PullAPIWrapper {
         }
     }
 
-    public PullResult pullKernelImpl(
-        final MessageQueue mq,
-        final String subExpression,
-        final String expressionType,
-        final long subVersion,
-        final long offset,
-        final int maxNums,
-        final int maxSizeInBytes,
-        final int sysFlag,
-        final long commitOffset,
-        final long brokerSuspendMaxTimeMillis,
-        final long timeoutMillis,
-        final CommunicationMode communicationMode,
-        final PullCallback pullCallback
-    ) throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
+    /**
+     * 根据拉取的MessageQueue去查找对应的Broker, 然后构建拉取消息请求头PullMessageRequestHeader发送到Broker, 然后执行拉取回调,
+     * 在回调里会通知消费者消费拉取到的消息
+     */
+    public PullResult pullKernelImpl(final MessageQueue mq,
+                                     final String subExpression,
+                                     final String expressionType,
+                                     final long subVersion,
+                                     final long offset,
+                                     final int maxNums,
+                                     final int maxSizeInBytes,
+                                     final int sysFlag,
+                                     final long commitOffset,
+                                     final long brokerSuspendMaxTimeMillis,
+                                     final long timeoutMillis,
+                                     final CommunicationMode communicationMode,
+                                     final PullCallback pullCallback) throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
+
         FindBrokerResult findBrokerResult =
             this.mQClientFactory.findBrokerAddressInSubscribe(this.mQClientFactory.getBrokerNameFromMessageQueue(mq),
                 this.recalculatePullFromWhichNode(mq), false);
@@ -237,7 +243,7 @@ public class PullAPIWrapper {
             if (PullSysFlag.hasClassFilterFlag(sysFlagInner)) {
                 brokerAddr = computePullFromWhichFilterServer(mq.getTopic(), brokerAddr);
             }
-
+            // 2) 拉取消息
             PullResult pullResult = this.mQClientFactory.getMQClientAPIImpl().pullMessage(
                 brokerAddr,
                 requestHeader,

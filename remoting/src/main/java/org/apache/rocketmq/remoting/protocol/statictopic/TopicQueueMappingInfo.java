@@ -22,20 +22,19 @@ import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.remoting.protocol.RemotingSerializable;
 
 public class TopicQueueMappingInfo extends RemotingSerializable {
+
     public static final int LEVEL_0 = 0;
 
-    String topic; // redundant field
+    String topic; // redundant field 冗余字段
     String scope = MixAll.METADATA_SCOPE_GLOBAL;
     int totalQueues;
-    String bname;  //identify the hosted broker name
-    long epoch; //important to fence the old dirty data
-    boolean dirty; //indicate if the data is dirty
-    //register to broker to construct the route
+    String bname;  // identify the hosted broker name 识别 broker name
+    long epoch; // important to fence the old dirty data
+    boolean dirty; // indicate if the data is dirty
+    // register to broker to construct the route
     protected ConcurrentMap<Integer/*logicId*/, Integer/*physicalId*/> currIdMap = new ConcurrentHashMap<>();
 
-    public TopicQueueMappingInfo() {
-
-    }
+    public TopicQueueMappingInfo() {}
 
     public TopicQueueMappingInfo(String topic, int totalQueues, String bname, long epoch) {
         this.topic = topic;
